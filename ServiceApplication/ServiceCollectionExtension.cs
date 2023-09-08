@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceApplication.Repository.Interfaces;
 using ServiceApplication.Repository.Base;
-using ServiceApplication.Repository.Base;
+ 
 
 namespace ServiceApplication.Services
 {
