@@ -7,14 +7,18 @@ using Microsoft.EntityFrameworkCore;
 using ServiceApplication.Entities;
 using ServiceApplication.Repository.Interfaces;
 using System.Text;
+using ServiceApplication;
+using ServiceApplication.Services;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace ServiceApplication.Repository.Base
 {
     public class ResultService<TEntity> : IResult<TEntity> where TEntity : BaseEntity
     {
-        private readonly QuizDBContext _dbContext;
+        private readonly AUEDBContext _dbContext;
         private DbSet<TEntity> _dbSet;
-        public ResultService(QuizDBContext dbContext)
+        public ResultService(AUEDBContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();
@@ -26,50 +30,146 @@ namespace ServiceApplication.Repository.Base
             output = await _dbContext.SaveChangesAsync();
             return output;
         }
+    //    public async Task<IEnumerable<QuizAttempt>> GetAttemptHistory(string argCandidateID)
+    //    {
+    //        try
+    //        {
+    //            List<QuizAttempt> obj = await _dbContext.Set<QuizAttempt>().FromSqlRaw(@"SELECT
+    //            CAST(ROW_NUMBER() OVER (ORDER BY R.CreatedOn DESC) AS int) Sl_No,
+    //            R.SessionID,
+    //            R.ExamID,
+    //            E.Name AS Exam,
+    //            CONVERT(varchar, R.CreatedOn, 106) AS Date,
+    //            (CAST(COUNT(R.Sl_No) as varchar(20)) + '/' + CAST(CAST(E.FullMarks AS INT) AS VARCHAR(20))) AS Score,
+				//CASE 
+				//	WHEN ((CAST(COUNT(R.Sl_No) AS decimal)/E.FullMarks *100) >50) THEN '1' 
+				//	ELSE '0'
+				//END AS 'Status'
+    //            FROM Result R
+    //            LEFT JOIN Exam E ON R.ExamID = E.ExamID
+    //            WHERE R.CandidateID ='" + argCandidateID + "' AND R.IsCorrent = 1"
+    //            +"GROUP BY R.SessionID, R.ExamID, E.Name, E.FullMarks, R.CreatedOn", argCandidateID).ToListAsync();
+    //            return obj;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            throw new Exception(ex.Message, ex.InnerException);
+    //        }
+    //        finally
+    //        {
+    //        }
+    //    }
         public async Task<IEnumerable<QuizAttempt>> GetAttemptHistory(string argCandidateID)
         {
             try
             {
-                List<QuizAttempt> obj = await _dbContext.Set<QuizAttempt>().FromSqlRaw(@"SELECT
+                string sql = @"
+            SELECT
                 CAST(ROW_NUMBER() OVER (ORDER BY R.CreatedOn DESC) AS int) Sl_No,
                 R.SessionID,
                 R.ExamID,
                 E.Name AS Exam,
                 CONVERT(varchar, R.CreatedOn, 106) AS Date,
                 (CAST(COUNT(R.Sl_No) as varchar(20)) + '/' + CAST(CAST(E.FullMarks AS INT) AS VARCHAR(20))) AS Score,
-				CASE 
-					WHEN ((CAST(COUNT(R.Sl_No) AS decimal)/E.FullMarks *100) >50) THEN '1' 
-					ELSE '0'
-				END AS 'Status'
-                FROM Result R
-                LEFT JOIN Exam E ON R.ExamID = E.ExamID
-                WHERE R.CandidateID ='" + argCandidateID + "' AND R.IsCorrent = 1"
-                +"GROUP BY R.SessionID, R.ExamID, E.Name, E.FullMarks, R.CreatedOn", argCandidateID).ToListAsync();
+                CASE 
+                    WHEN ((CAST(COUNT(R.Sl_No) AS decimal)/E.FullMarks *100) >50) THEN '1' 
+                    ELSE '0'
+                END AS 'Status'
+            FROM Result R
+            LEFT JOIN Exam E ON R.ExamID = E.ExamID
+            WHERE R.CandidateID = @argCandidateID AND R.IsCorrect = 1
+            GROUP BY R.SessionID, R.ExamID, E.Name, E.FullMarks, R.CreatedOn";
+
+                List<QuizAttempt> obj = new List<QuizAttempt>();
+
+                using (var connection = new SqlConnection(""))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@argCandidateID", argCandidateID);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (reader.Read())
+                            {
+                                // Map the reader's columns to QuizAttempt properties and create QuizAttempt objects.
+                                // Add them to the 'obj' list.
+                                // Example: var quizAttempt = new QuizAttempt { Property1 = reader["Column1"], ... };
+                                // obj.Add(quizAttempt);
+                            }
+                        }
+                    }
+                }
+
                 return obj;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex.InnerException);
             }
-            finally
-            {
-            }
         }
+
+        //public async Task<IEnumerable<QuizReport>> ScoreReport(ReqReport argRpt)
+        //{
+        //    try
+        //    {
+        //        List<QuizReport> obj = await _dbContext.Set<QuizReport>().FromSqlRaw(@"EXEC GetReport {0},{1},{2}", argRpt.ExamID, argRpt.CandidateID, argRpt.SessionID).ToListAsync();  
+        //        return obj;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message, ex.InnerException);
+        //    }
+        //    finally
+        //    {
+        //    }
+        //}
+
         public async Task<IEnumerable<QuizReport>> ScoreReport(ReqReport argRpt)
         {
             try
             {
-                List<QuizReport> obj = await _dbContext.Set<QuizReport>().FromSqlRaw(@"EXEC GetReport {0},{1},{2}", argRpt.ExamID, argRpt.CandidateID, argRpt.SessionID).ToListAsync();  
+                string connectionString = "";
+                List<QuizReport> obj = new List<QuizReport>();
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "EXEC GetReport @p0, @p1, @p2";
+                        command.Parameters.AddWithValue("@p0", argRpt.ExamID);
+                        command.Parameters.AddWithValue("@p1", argRpt.CandidateID);
+                        command.Parameters.AddWithValue("@p2", argRpt.SessionID);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (reader.Read())
+                            {
+                                // Map the reader's columns to QuizReport properties and create QuizReport objects.
+                                // Add them to the 'obj' list.
+                                // Example: var quizReport = new QuizReport { Property1 = reader["Column1"], ... };
+                                // obj.Add(quizReport);
+                            }
+                        }
+                    }
+                }
+
                 return obj;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex.InnerException);
             }
-            finally
-            {
-            }
         }
+
+
+
+
+
         public async Task<string> GetCertificateString(ReqCertificate argRpt)
         {
             Candidate _candidate =await _dbContext.Candidate.Where(e => e.Candidate_ID == argRpt.CandidateID.ToString()).FirstOrDefaultAsync();          

@@ -6,14 +6,15 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ServiceApplication.Entities;
 using ServiceApplication.Repository.Interfaces;
+using ServiceApplication.Services;
 
 namespace ServiceApplication.Repository.Base
 {
     public class ExamService<TEntity> : IExam<TEntity> where TEntity : BaseEntity
     {
-        private readonly QuizDBContext _dbContext;
+        private readonly AUEDBContext _dbContext;
         private DbSet<TEntity> _dbSet;
-        public ExamService(QuizDBContext dbContext)
+        public ExamService(AUEDBContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();
@@ -24,7 +25,8 @@ namespace ServiceApplication.Repository.Base
         }
         public async Task<TEntity> GetExam(int id)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
+            //return await _dbSet.FindAsync(Id);
         }
         public async Task<IQueryable<TEntity>> SearchExam(Expression<Func<TEntity, bool>> search = null)
         {

@@ -5,15 +5,17 @@ using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ServiceApplication.Entities;
+ 
 using ServiceApplication.Repository.Interfaces;
+using ServiceApplication.Services;
 
 namespace ServiceApplication.Repository.Base
 {
     public class CandidateService<TEntity> : ICandidate<TEntity> where TEntity : BaseEntity
     {
-        private readonly QuizDBContext _dbContext;
+        private readonly AUEDBContext _dbContext;
         private DbSet<TEntity> _dbSet;
-        public CandidateService(QuizDBContext dbContext)
+        public CandidateService(AUEDBContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();
@@ -24,8 +26,10 @@ namespace ServiceApplication.Repository.Base
         }
         public async Task<TEntity> GetCandidate(int id)
         {
-            return await _dbSet.FindAsync(id);
+            
+            return await _dbSet.FirstOrDefaultAsync(e => e.Id== id);
         }
+ 
         
         public async Task<IQueryable<TEntity>> SearchCandidate(Expression<Func<TEntity, bool>> search = null)
         {

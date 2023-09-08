@@ -11,16 +11,17 @@ using AmericanUniversityUAE.Web.Models;
 using ServiceApplication.Repository.Interfaces;
 
 
+
 namespace AmericanUniversityUAE.Web.Controllers
 {    
     [BasicAuthentication]   
     public class ExamController : Controller
     {
         private readonly ILogger<ExamController> _logger;
-        private readonly IExam<Services.Entities.Exam> _exam;
-        private readonly IQuestion<Services.Entities.Question> _question;
-        private readonly IResult<Services.Entities.Result> _result;
-        public ExamController(ILogger<ExamController> logger, IExam<Services.Entities.Exam> exam, IQuestion<Services.Entities.Question> question, IResult<Services.Entities.Result> result)
+        private readonly IExam<ServiceApplication.Entities.Exam> _exam;
+        private readonly IQuestion<ServiceApplication.Entities.Question> _question;
+        private readonly IResult<ServiceApplication.Entities.Result> _result;
+        public ExamController(ILogger<ExamController> logger, IExam<ServiceApplication.Entities.Exam> exam, IQuestion<ServiceApplication.Entities.Question> question, IResult<ServiceApplication.Entities.Result> result)
         {
             _logger = logger;
             _exam = exam;

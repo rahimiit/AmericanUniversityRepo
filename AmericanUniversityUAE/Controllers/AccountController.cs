@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Quiz_Application.Web.Models;
-using Quiz_Application.Web.Extensions;
-using Quiz_Application.Web.Enums;
+using AmericanUniversityUAE.Web.Models;
+ 
+using ServiceApplication.Services;
 using ServiceApplication.Entities;
 using ServiceApplication.Repository.Interfaces;
 
@@ -192,7 +192,7 @@ namespace AmericanUniversityUAE.Web.Controllers
             if (ModelState.IsValid)
             {
                 int i = 0;
-                IQueryable<Candidate> _iqCandidate = await _candidate.SearchCandidate(e => e.Email.Equals(objCollection.Email));
+                IQueryable<Candidate> _iqCandidate = await _candidate.SrchCandidate(e => e.Email.Equals(objCollection.Email));
                 if (_iqCandidate.Any())
                 {
                     Candidate objCandidate = _iqCandidate.FirstOrDefault();

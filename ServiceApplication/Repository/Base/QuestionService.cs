@@ -4,16 +4,17 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ServiceApplication.Services.Entities;
+using ServiceApplication.Entities;
 using ServiceApplication.Repository.Interfaces;
+using ServiceApplication.Services;
 
 namespace ServiceApplication.Repository.Base
 {
     public class QuestionService<TEntity> : IQuestion<TEntity> where TEntity : Entities.BaseEntity
     {
-       private readonly QuizDBContext _dbContext;
+       private readonly AUEDBContext _dbContext;
        private DbSet<TEntity> _dbSet;
-       public QuestionService(QuizDBContext dbContext)
+       public QuestionService(AUEDBContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<TEntity>();

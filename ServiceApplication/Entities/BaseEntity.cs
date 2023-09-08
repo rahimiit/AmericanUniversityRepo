@@ -14,6 +14,7 @@ namespace  ServiceApplication.Entities
         [Column(TypeName = "datetime")]
         [DataType(DataType.DateTime)]
         public DateTime? CreatedOn { get; set; }
+        public int? Id { get; set; }
 
         [Column(TypeName = "datetime")]
         [DataType(DataType.DateTime)]
